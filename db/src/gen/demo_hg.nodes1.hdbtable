@@ -1,0 +1,8 @@
+COLUMN TABLE demo_hg_nodes1 (
+  Vertex_ID NVARCHAR(75) NOT NULL,
+  name NVARCHAR(32),
+  field1 NVARCHAR(32),
+  field2 NVARCHAR(32),
+  field3 NVARCHAR(32),
+  PRIMARY KEY(Vertex_ID)
+)

@@ -1,0 +1,22 @@
+PROCEDURE "GS_NEIGHBORS"( 
+	IN i_startVertex NVARCHAR(75),	-- the key of the start vertex
+	IN i_minDepth INTEGER, 		-- the minimum hop distance
+	IN i_maxDepth INTEGER, 		-- the maximum hop distance
+	IN i_dir VARCHAR(10),		-- the direction the edges are traversed: OUTGOING, INCOMING, ANY
+	OUT o_vertices "TT_VERTICES_NEI",
+	OUT o_verticesCount BIGINT,
+	OUT o_edges "TT_EDGES_NEI"
+
+)
+   LANGUAGE GRAPH
+   SQL SECURITY INVOKER
+   READS SQL DATA AS
+BEGIN
+	GRAPH g = Graph("SKIING");
+	VERTEX v_start = Vertex(:g, :i_startVertex);
+	MULTISET<Vertex> m_neighbors = Neighbors(:g, :v_start, :i_minDepth, :i_maxDepth, :i_dir);
+	o_vertices = SELECT :v."VERTEX_ID" FOREACH v IN :m_neighbors;
+	o_verticesCount = COUNT(:m_neighbors);
+	MULTISET<Edge> m_edges = EDGES(:g, :m_neighbors, :m_neighbors);
+	o_edges = SELECT :e."EDGE_ID", :e."START_VERTEX_ID", :e."END_VERTEX_ID" FOREACH e IN :m_edges;
+END

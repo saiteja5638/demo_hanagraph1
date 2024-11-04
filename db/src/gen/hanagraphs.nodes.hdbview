@@ -1,0 +1,7 @@
+VIEW hanagraphs_nodes AS SELECT
+  nodes1_0.Vertex_ID,
+  nodes1_0.name,
+  nodes1_0.field1,
+  nodes1_0.field2,
+  nodes1_0.field3
+FROM demo_hg_nodes1 AS nodes1_0

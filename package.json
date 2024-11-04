@@ -1,0 +1,43 @@
+{
+  "name": "demo_hanagraph1",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^6.8.4",
+    "@sap/cds-hana": "^2",
+    "@sap/cds-odata-v2-adapter-proxy": "^1.9.7",
+    "@sap/hana-client": "^2.20.22",
+    "express": "^4",
+    "sqlite3": "^5.1.7"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "cds": {
+    "hana": {
+      "deploy-format": "hdbtable"
+    },
+    "build": {
+      "tasks": [
+        {
+          "for": "hana",
+          "dest": "../db"
+        },
+        {
+          "for": "node-cf"
+        }
+      ]
+    },
+    "requires": {
+      "db": {
+        "kind": "hana"
+      }
+    }
+  },
+  "devDependencies": {
+    "@sap/cds-dk": "^7.9.2"
+  }
+}

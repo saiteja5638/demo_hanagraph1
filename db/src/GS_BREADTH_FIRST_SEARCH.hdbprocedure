@@ -1,0 +1,31 @@
+PROCEDURE "GS_BREADTH_FIRST_SEARCH"( 
+	IN i_startVertex NVARCHAR(75),
+	IN i_dir NVARCHAR(10),
+	IN i_maxDepth BIGINT,
+	OUT o_vertices "TT_VERTICES_BFS",
+	OUT o_edges "TT_EDGES_BFS"
+)
+   LANGUAGE GRAPH
+   SQL SECURITY INVOKER
+   READS SQL DATA AS
+BEGIN
+	 GRAPH g = Graph("SKIING");
+	-- add a vertex/edge attribute to store data. In this case, the hop "DISTANCE".
+	ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "DISTANCE" = -1L);
+	ALTER g ADD TEMPORARY EDGE ATTRIBUTE (BIGINT "DISTANCE" = -1L);
+	VERTEX v_start = Vertex(:g, :i_startVertex);
+	-- traverse the graph from the start Vertex, "hooking" into each vertex/edge visit
+	-- if a maximum distance is reached, the traversal is stopped
+	TRAVERSE BFS(:i_dir) :g FROM :v_start
+		ON VISIT VERTEX (Vertex v, BIGINT v_dist) {
+			v."DISTANCE" = :v_dist;
+			IF (:v_dist >= :i_maxDepth) { END TRAVERSE; }
+		}
+		ON VISIT EDGE (Edge e, BIGINT e_dist) {
+			e."DISTANCE" = :e_dist;
+		};
+	MULTISET<Vertex> m_vertices = v IN Vertices(:g) WHERE :v."DISTANCE" >= 0L;
+	MULTISET<Edge> m_edges = e IN Edges(:g) WHERE :e."DISTANCE" >= 0L;
+	o_vertices = SELECT :v."VERTEX_ID", :v."DISTANCE" FOREACH v IN :m_vertices;
+	o_edges = SELECT :e."EDGE_ID", :e."START_VERTEX_ID", :e."END_VERTEX_ID", :e."DISTANCE" FOREACH e IN :m_edges;
+END

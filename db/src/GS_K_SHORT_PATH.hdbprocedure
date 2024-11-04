@@ -1,0 +1,26 @@
+PROCEDURE "GS_K_SHORT_PATH"(
+IN i_startVertex NVARCHAR(75), 	-- the key of the start vertex
+IN i_endVertex NVARCHAR(75), 		-- the key of the end vertex
+IN i_k INTEGER, 				-- the number of paths to be returned
+OUT o_paths "TT_PATHS_TKSP"
+ )
+   LANGUAGE GRAPH
+   SQL SECURITY INVOKER
+   READS SQL DATA AS
+BEGIN
+GRAPH g = Graph("SKIING");
+VERTEX v_start = Vertex(:g, :i_startVertex);
+VERTEX v_end = Vertex(:g, :i_endVertex);
+SEQUENCE<WeightedPath<INTEGER>> s_paths = K_Shortest_Paths(:g, :v_start, :v_end, :i_k, (Edge e) => INTEGER{ return :e."LENGTH"; });
+BIGINT currentResultRow = 1L;
+FOREACH result_path IN (:s_paths) WITH ORDINALITY AS path_id {
+    FOREACH path_edge in EDGES(:result_path) WITH ORDINALITY AS edge_order {
+        o_paths."PATH_ID"[:currentResultRow] = INTEGER(:path_id);
+        o_paths."PATH_LENGTH"[:currentResultRow] = Length(:result_path);
+        o_paths."PATH_WEIGHT"[:currentResultRow] = Weight(:result_path);
+        o_paths."EDGE_ID"[:currentResultRow] = :path_edge."EDGE_ID";
+        o_paths."EDGE_ORDER"[:currentResultRow] = INTEGER(:edge_order);
+        currentResultRow = :currentResultRow + 1L;
+    }
+}
+END

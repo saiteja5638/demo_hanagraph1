@@ -1,0 +1,13 @@
+VIEW hanagraphs_edges AS SELECT
+  edges_0.edge_id,
+  edges_0."LENGTH",
+  edges_0.difficulty,
+  edges_0.start_Vertex_ID,
+  edges_0.end_Vertex_ID,
+  edges_0.mode,
+  edges_0.status
+FROM demo_hg_edges AS edges_0
+WITH ASSOCIATIONS (
+  MANY TO ONE JOIN hanagraphs_nodes AS "START" ON ("START".Vertex_ID = start_Vertex_ID),
+  MANY TO ONE JOIN hanagraphs_nodes AS "END" ON ("END".Vertex_ID = end_Vertex_ID)
+)

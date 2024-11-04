@@ -1,0 +1,4 @@
+GET http://localhost:4004/v2/odata/v4/hanagraphs/GraphPost?FLAG=SPOA&Data='{"ID":"ES3-90-24_BOBBIN","DIRECTION":"OUTGOING"}'
+Content-Type: application/json
+
+# GET http://localhost:4004/odata/v4/hanagraphs/ExcelUpload(FLAG='EDGES',Data="[{difficulty:\"\",edge_id:1,end_Vertex_ID:\"Y97121\",lenght:1,mode:\"\",start_Vertex_ID:\"ES3-90-24_BOBBIN\",status:\"\"}]")

@@ -1,0 +1,54 @@
+PROCEDURE "GS_TOPOLOGICAL_SORT"( 
+    OUT o_vertices "GS_TOPOLOGICAL_SORT_TT_VERTICES",
+    OUT o_isSortable INT
+)
+   LANGUAGE GRAPH
+   SQL SECURITY INVOKER
+   READS SQL DATA AS
+BEGIN
+    GRAPH g = Graph("SKIING");
+    ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "IN_DEGREE");
+    ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "VISIT_ORDER");
+    ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "EXIT_ORDER");
+    ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "DEPTH");
+    o_isSortable = 1;
+    BIGINT c_visit = 0L;
+    BIGINT c_exit = 0L;
+    FOREACH v IN VERTICES(:G) {
+        v."IN_DEGREE" = IN_DEGREE(:v);
+    }
+    MULTISET<VERTEX> m_nodes = v IN VERTICES(:G) WHERE :v."IN_DEGREE" == 0L;
+    IF (COUNT(:m_nodes) == 0L) { 
+        o_isSortable = 0;
+        RETURN; 
+    }
+    FOREACH v_start in :m_nodes {
+        TRAVERSE DFS('OUTGOING') :g FROM :v_start
+            ON VISIT VERTEX (VERTEX v_visited, BIGINT lvl) {
+                IF (:v_visited."VISIT_ORDER" IS NULL) {
+                    c_visit = :c_visit + 1L;
+                    v_visited."VISIT_ORDER" = :c_visit;
+                    v_visited."DEPTH" = :lvl;
+                }
+                ELSE { END TRAVERSE; }
+            }
+            ON EXIT VERTEX (VERTEX v_exited) {
+                IF (:v_exited."EXIT_ORDER" IS NULL) {
+                    c_exit = :c_exit + 1L;
+                    v_exited."EXIT_ORDER" = :c_exit;
+                }
+            }
+            ON VISIT EDGE (EDGE e_visited) {
+                VERTEX S = SOURCE(:e_visited);
+                VERTEX T = TARGET(:e_visited);
+                IF (:T."VISIT_ORDER" IS NOT NULL AND :T."EXIT_ORDER" IS NULL) {
+                    o_isSortable = 0;
+                    END TRAVERSE ALL;
+                }
+            };
+    }
+    IF ( :o_isSortable == 1 ) {
+        SEQUENCE<VERTEX> s_ordered_vertices = SEQUENCE<VERTEX>(Vertices(:g)) ORDER BY "EXIT_ORDER" DESC;
+        o_vertices = SELECT :v."VERTEX_ID", :v."EXIT_ORDER", :v."DEPTH" FOREACH v IN :s_ordered_vertices;
+    }
+END

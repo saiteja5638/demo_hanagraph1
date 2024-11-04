@@ -1,0 +1,13 @@
+COLUMN TABLE demo_hg_edges (
+  edge_id INTEGER NOT NULL,
+  "LENGTH" INTEGER,
+  difficulty NVARCHAR(16),
+  start_Vertex_ID NVARCHAR(75) NOT NULL,
+  end_Vertex_ID NVARCHAR(75) NOT NULL,
+  mode NVARCHAR(8),
+  status NVARCHAR(16),
+  PRIMARY KEY(edge_id)
+) WITH ASSOCIATIONS (
+  MANY TO ONE JOIN demo_hg_nodes1 AS "START" ON ("START".Vertex_ID = start_Vertex_ID),
+  MANY TO ONE JOIN demo_hg_nodes1 AS "END" ON ("END".Vertex_ID = end_Vertex_ID)
+)

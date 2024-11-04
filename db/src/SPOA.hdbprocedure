@@ -1,0 +1,31 @@
+PROCEDURE "SPOA"( 
+	IN i_startVertex NVARCHAR(75),
+	IN i_direction NVARCHAR(10), 
+	OUT o_vertices "TT_VERTICES_SPOA",
+	OUT o_edges "TT_EDGES_SPOA"
+	 )
+   LANGUAGE GRAPH
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   READS SQL DATA AS
+BEGIN
+    GRAPH g = Graph("SKIING");
+	VERTEX v_start = Vertex(:g, :i_startVertex);
+	GRAPH g_spoa = SHORTEST_PATHS_ONE_TO_ALL(:g, :v_start, "DISTANCE", (Edge e) =>  INTEGER{ return :e."LENGTH"; });
+	o_vertices = SELECT :v."VERTEX_ID",:v."DISTANCE" FOREACH v IN Vertices(:g_spoa);
+	o_edges = SELECT :e."EDGE_ID", :e."START_VERTEX_ID", :e."END_VERTEX_ID", :e."LENGTH" FOREACH e IN Edges(:g_spoa);
+
+    -- VERTEX v_s = Vertex(:g, :startV);
+	-- MULTISET<Vertex> rests = v IN Vertices(:g) WHERE :v."VERTEX_ID" > 0;
+	-- ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (INT "distance" = 0);
+	-- ALTER g ADD TEMPORARY VERTEX ATTRIBUTE (BIGINT "hops" = 0L);
+	-- FOREACH rest in :rests {
+	-- 	VERTEX v_rest = Vertex(:g, :rest."NODE_ID");
+	-- 	WeightedPath<INT> p = Shortest_Path(:g, :v_s, :v_rest, (Edge conn) => INTEGER { return :conn."LENGTH"; } );
+	-- 	WeightedPath<INT> a = Shortest_Path()
+	-- 	rest."hops" = Length(:p);
+	-- 	rest."distance" = Weight(:p);
+	-- }
+	-- res = SELECT :v."NODE_ID",:v."NAME", :v."distance", :v."hops" FOREACH v IN :rests;
+
+END
