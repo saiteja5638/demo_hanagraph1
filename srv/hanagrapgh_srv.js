@@ -79,7 +79,16 @@ module.exports = async srv => {
 
         const result = await tx.run(KSPOA_query, [res_response.STARTV, res_response.END, res_response.I_K])
 
-        return result
+        let  replace_results = []
+
+        result.forEach(i=>{
+          i['START_VERTEX_ID'] = res_response.STARTV
+          i['END_VERTEX_ID'] = res_response.END
+
+          replace_results.push(i)
+        })
+
+        return replace_results
       }
 
     } catch (error) {
