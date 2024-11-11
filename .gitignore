@@ -3,3 +3,7 @@
 db/.env
 # added by cds
 .cdsrc-private.json
+node_modules
+demo_hanagraph1_1.0.0.mtar
+package-lock.json
+gen
